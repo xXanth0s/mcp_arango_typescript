@@ -1,0 +1,63 @@
+# Cursor Rules for ArangoDB TypeScript API Project
+
+## Critical Implementation Patterns
+
+1. **Repository Pattern**
+   - All data access goes through repositories
+   - BaseRepository provides common CRUD functions
+   - Entity-specific repositories extend BaseRepository
+   - Custom QueryRepository for complex AQL queries
+
+2. **ArangoDB Graph Structure**
+   - Document collections: users, items, orders
+   - Edge collections: user_orders (with purchaseDate), order_items (with amount)
+   - Graph name: shop_graph
+
+3. **Express API Structure**
+   - Routes organized by entity (users, items, orders)
+   - Try/catch blocks in all handlers with next(error) for errors
+   - Consistent error response format
+   - Authentication will be added later
+
+4. **ArangoDB Query Patterns**
+   - Use aql template literals for queries
+   - Prefer parameterized queries over string concatenation
+   - Use transactions for multi-document operations
+
+## Project Preferences
+
+1. **Code Style**
+   - ES Modules with .js extensions in imports
+   - Explicit return types on all functions
+   - Interface-based models with optional Arango fields (_key, _id, _rev)
+   - Async/await for all database operations
+
+2. **API Response Format**
+   - Success: Direct entity or array
+   - Errors: { message: "Error description" }
+   - User responses: Remove password field before sending
+
+3. **Database Connections**
+   - Singleton pattern for database connection
+   - Connection error handling centralized
+   - Schema initialization in separate script
+
+4. **Docker Usage**
+   - ArangoDB runs in Docker container
+   - Application can run locally or containerized
+   - Database volume persistence for data
+
+## Known Challenges
+
+1. **TypeScript with Express**
+   - Router type definitions need explicit typing
+   - Error middleware needs correct typing
+
+2. **ArangoDB Transaction API**
+   - Transaction function runs server-side in ArangoDB
+   - API signatures change between versions
+   - Need to adapt to arangojs version 10+
+
+3. **Collection Naming**
+   - Docker service named differently than collections
+   - Maintain consistent collection naming in code 
