@@ -50,7 +50,7 @@ export const INDEXES = {
 // Default database configuration
 export const DB_CONFIG = {
   name: 'shop_db',
-  url: 'http://localhost:8529',
+  url: 'http://localhost:8530',
   auth: {
     username: 'root',
     password: 'rootpassword'

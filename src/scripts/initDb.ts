@@ -5,7 +5,7 @@ import { COLLECTIONS, GRAPH, INDEXES, DB_CONFIG } from '../schemas/schema.js';
  * Initializes the database and creates all required collections and indexes
  */
 async function initializeDatabase(): Promise<void> {
-  const db = getDb();
+  let db = getDb('_system');
   
   try {
     // Check if database exists, if not create it
@@ -16,7 +16,7 @@ async function initializeDatabase(): Promise<void> {
     }
     
     console.log(`Using database: ${DB_CONFIG.name}`);
-    db.database(DB_CONFIG.name);
+    db = db.database(DB_CONFIG.name);
     
     // Create document collections
     for (const collection of [COLLECTIONS.USERS, COLLECTIONS.ITEMS, COLLECTIONS.ORDERS]) {

@@ -7,7 +7,7 @@ let dbInstance: Database | null = null;
 /**
  * Gets the database instance and creates one if it doesn't exist
  */
-export const getDb = (): Database => {
+export const getDb = (databaseName?: string): Database => {
   if (!dbInstance) {
     dbInstance = new Database({
       url: DB_CONFIG.url,
@@ -15,7 +15,7 @@ export const getDb = (): Database => {
         username: DB_CONFIG.auth.username,
         password: DB_CONFIG.auth.password
       },
-      databaseName: DB_CONFIG.name
+      databaseName: databaseName || DB_CONFIG.name
     });
   }
   return dbInstance;
