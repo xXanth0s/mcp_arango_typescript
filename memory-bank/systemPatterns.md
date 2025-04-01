@@ -1,13 +1,11 @@
 # System Patterns
 
 ## Architecture Overview
-The project follows a layered architecture pattern with clear separation of concerns:
+The project implements a Model Context Protocol (MCP) server that connects directly to ArangoDB:
 
 ```
 ┌─────────────┐
-│   Express   │  HTTP API & Routing
-├─────────────┤
-│ Controllers │  Request Handling & Response Formatting
+│  MCP Server │  Protocol Handler & Resource/Tool Management
 ├─────────────┤
 │ Repositories│  Data Access Layer
 ├─────────────┤
@@ -26,14 +24,10 @@ The project follows a layered architecture pattern with clear separation of conc
 - Database connection is implemented as a singleton
 - Ensures only one connection to ArangoDB exists
 
-### Model-View-Controller (MVC)
-- **Models**: Define data structures (User, Item, Order)
-- **Views**: JSON responses from API
-- **Controllers**: Handle requests via routes
-
-### Data Transfer Objects (DTO)
-- Safe response transformations (e.g., removing password from User)
-- Clear request/response structures
+### MCP Resource/Tool Pattern
+- **Resources**: Provide data about the system (schema, collections)
+- **Tools**: Provide interactive functionality (queries, data retrieval)
+- **Templates**: Allow parameterized resource URIs
 
 ## Database Schema Design
 - **Document Collections**: For entity data (users, items, orders)
@@ -41,16 +35,16 @@ The project follows a layered architecture pattern with clear separation of conc
 - **Graph Definition**: Combines collections into navigable structure
 
 ## Error Handling Strategy
-- Try-catch blocks in route handlers
-- Central error middleware
-- HTTP status code mapping
+- Try-catch blocks in server resource/tool handlers
+- Consistent error response format
+- Detailed error messages where appropriate
 
-## API Design Principles
-- RESTful resource naming
-- Consistent URL structure
-- HTTP verbs for CRUD operations
-- Proper status codes
-- Error response format standardization
+## MCP Design Principles
+- Standardized resource naming
+- Consistent URI structure
+- Clear tool parameters with validation
+- Structured response formats
+- Error formatting for client comprehension
 
 ## Transaction Handling
 - ArangoDB transactions for multi-document operations
@@ -66,9 +60,8 @@ The project follows a layered architecture pattern with clear separation of conc
 src/
 ├── models/        # Data models & interfaces
 ├── repositories/  # Data access layer
-├── routes/        # API routes & controllers
 ├── schemas/       # Database schema definitions
-├── scripts/       # Utility scripts (db init)
+├── scripts/       # Utility scripts (db init, seed)
 ├── services/      # Database connection
-└── index.ts       # App entry point
+└── mcp-server.ts  # MCP server entry point
 ``` 

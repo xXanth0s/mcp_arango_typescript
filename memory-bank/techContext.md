@@ -5,9 +5,9 @@
 - **Runtime**: Bun
 - **Package Manager**: pnpm (with Bun for execution)
 - **Database**: ArangoDB
-- **Web Framework**: Express
+- **Protocol**: Model Context Protocol (MCP)
 - **Database Client**: arangojs
-- **Development Tools**: ESLint
+- **Development Tools**: ESLint, MCP Inspector
 
 ## Project Configuration
 - TypeScript is configured with strict type checking
@@ -22,14 +22,14 @@
 2. **pnpm**: Package manager for dependency management
 3. **Docker**: Required for running ArangoDB in a container
 4. **TypeScript**: For type-safe development
+5. **MCP Inspector**: For testing MCP resources and tools
 
 ## Build & Run Scripts
-- `bun run build`: Build with Bun's bundler targeting Node.js
-- `bun run dev`: Run with hot-reloading during development
-- `bun run start`: Run the built application
-- `bun run db:init`: Initialize database schema
-- `bun run setup`: Build and initialize database
-- `bun run lint`: Run ESLint on source code
+- `pnpm run start`: Start the MCP server
+- `pnpm run db:init`: Initialize database schema
+- `pnpm run db:seed`: Seed the database with test data
+- `pnpm run lint`: Run ESLint on source code
+- `pnpm run inspector`: Run the MCP Inspector for interactive testing
 
 ## Docker Configuration
 Docker Compose file includes:
@@ -38,13 +38,15 @@ Docker Compose file includes:
 - Port 8529 exposed for database access
 - Root password configured
 
-## Environment Variables
-- `PORT`: API server port (default: 3000)
-- `NODE_ENV`: Environment (development/production)
+## Claude Desktop Integration
+- Configuration file with MCP server definition
+- Bun path setup for macOS systems
+- MCP Server accessible from Claude AI
 
 ## Dependencies
+- **@modelcontextprotocol/sdk**: MCP server implementation
 - **arangojs**: Official ArangoDB JavaScript driver
-- **express**: Web framework for API
+- **zod**: Schema validation for MCP tools
 - **typescript**: TypeScript compiler
 - **bun**: JavaScript/TypeScript runtime and bundler
 
