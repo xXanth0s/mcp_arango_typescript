@@ -44,75 +44,78 @@ export class OrderRepository extends BaseRepository<Order> {
   ): Promise<Order> {
     const db = getDb();
     
-    // Start a transaction
-    const result = await db.executeTransaction({
-      collections: {
-        write: [
-          COLLECTIONS.ORDERS, 
-          COLLECTIONS.ORDER_ITEMS, 
-          COLLECTIONS.USER_ORDERS,
-          COLLECTIONS.ITEMS
-        ]
-      },
-      action: function(params) {
-        const { userId, orderData, items, collections } = params;
-        const db = require('@arangodb').db;
-        
-        // Create the order
-        const now = new Date().toISOString();
-        const order = {
-          ...orderData,
-          orderDate: orderData.orderDate || now,
-          status: orderData.status || 'pending',
-          createdAt: now,
-          updatedAt: now
-        };
-        
-        // Save the order
-        const orderDoc = db[collections.ORDERS].save(order);
-        const orderId = orderDoc._id;
-        
-        // Create edge from user to order
-        const userOrderEdge = {
-          _from: `${collections.USERS}/${userId}`,
-          _to: orderId,
-          purchaseDate: now
-        };
-        db[collections.USER_ORDERS].save(userOrderEdge);
-        
-        // Create edges from order to items and update stock
-        let totalAmount = 0;
-        for (const item of items) {
-          // Get the item to calculate price
-          const itemDoc = db[collections.ITEMS].document(item.itemId);
-          
-          // Update item stock
-          db[collections.ITEMS].update(item.itemId, {
-            stock: itemDoc.stock - item.amount
-          });
-          
-          // Create edge from order to item
-          const orderItemEdge = {
-            _from: orderId,
-            _to: `${collections.ITEMS}/${item.itemId}`,
-            amount: item.amount
-          };
-          db[collections.ORDER_ITEMS].save(orderItemEdge);
-          
-          // Add to order total
-          totalAmount += itemDoc.price * item.amount;
-        }
-        
-        // Update order with total amount
-        const updatedOrder = db[collections.ORDERS].update(orderDoc._key, {
-          totalAmount
-        }, { returnNew: true });
-        
-        return updatedOrder.new;
-      },
-      params: { userId, orderData, items, collections: COLLECTIONS }
-    });
+    // Create the order
+    const now = new Date().toISOString();
+    const order = {
+      ...orderData,
+      orderDate: orderData.orderDate || now,
+      status: orderData.status || 'pending',
+      createdAt: now,
+      updatedAt: now,
+      totalAmount: 0 // Will be updated later
+    };
     
+    // Save the order
+    const orderCursor = await db.query(aql`
+      INSERT ${order} INTO ${this.collection}
+      RETURN NEW
+    `);
+    const orderDoc = await orderCursor.next();
+    
+    // Create edge from user to order
+    const userOrderEdge = {
+      _from: `${COLLECTIONS.USERS}/${userId}`,
+      _to: orderDoc._id,
+      purchaseDate: now
+    };
+    
+    await db.query(aql`
+      INSERT ${userOrderEdge} INTO ${db.collection(COLLECTIONS.USER_ORDERS)}
+    `);
+    
+    // Process each item
+    let totalAmount = 0;
+    
+    for (const item of items) {
+      // Get the item to calculate price
+      const itemCursor = await db.query(aql`
+        FOR item IN ${db.collection(COLLECTIONS.ITEMS)}
+        FILTER item._key == ${item.itemId}
+        RETURN item
+      `);
+      const itemDoc = await itemCursor.next();
+      
+      // Update item stock
+      await db.query(aql`
+        UPDATE { _key: ${item.itemId} }
+        WITH { stock: ${itemDoc.stock - item.amount} }
+        IN ${db.collection(COLLECTIONS.ITEMS)}
+      `);
+      
+      // Create edge from order to item
+      const orderItemEdge = {
+        _from: orderDoc._id,
+        _to: `${COLLECTIONS.ITEMS}/${item.itemId}`,
+        amount: item.amount
+      };
+      
+      await db.query(aql`
+        INSERT ${orderItemEdge} INTO ${db.collection(COLLECTIONS.ORDER_ITEMS)}
+      `);
+      
+      // Add to order total
+      totalAmount += itemDoc.price * item.amount;
+    }
+    
+    // Update order with total amount
+    const updatedOrderCursor = await db.query(aql`
+      UPDATE { _key: ${orderDoc._key} }
+      WITH { totalAmount: ${totalAmount} }
+      IN ${this.collection}
+      RETURN NEW
+    `);
+    
+    const result = await updatedOrderCursor.next();
     return result as Order;
   }
   

@@ -1,31 +1,28 @@
 {
   "author": "",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
     "arangojs": "^10.1.1",
-    "express": "^4.21.2",
-    "ts-node": "^10.9.2"
+    "zod": "^3.24.2"
   },
-  "description": "TypeScript API with ArangoDB integration",
+  "description": "MCP server for ArangoDB integration",
   "devDependencies": {
-    "@types/express": "^5.0.1",
     "@types/node": "^22.13.14",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
     "eslint": "^9.23.0",
-    "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.2"
   },
-  "keywords": [],
+  "keywords": ["mcp", "arango", "database", "typescript"],
   "license": "ISC",
-  "main": "dist/index.js",
-  "name": "arango-ts-api",
+  "main": "src/mcp-server.ts",
+  "name": "mcp-arango-server",
   "scripts": {
-    "build": "bun build --target=node ./src/index.ts --outdir=./dist",
     "db:init": "bun src/scripts/initDb.ts",
-    "dev": "bun --watch src/index.ts",
+    "db:seed": "bun src/scripts/seedTestData.ts",
     "lint": "eslint --ext .ts src/",
-    "setup": "bun run build && bun run db:init",
-    "start": "bun dist/index.js"
+    "start": "bun src/mcp-server.ts",
+    "inspector": "npx @modelcontextprotocol/inspector bun src/mcp-server.ts"
   },
   "type": "module",
   "version": "1.0.0"
