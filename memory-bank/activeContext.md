@@ -1,13 +1,14 @@
 # Active Context
 
 ## Current Focus
-The project is currently implementing an MCP server that provides access to ArangoDB data. The system offers standardized resources and tools for accessing users, items, and orders data with the appropriate relationships between them. We've transitioned to a pure MCP implementation, removing the Express API components.
+The project is currently implementing an MCP server that provides access to ArangoDB data. The system offers standardized resources and tools for accessing users, items, and orders data with the appropriate relationships between them. We've transitioned to a pure MCP implementation, removing the Express API components, and added LLM-based validation for query operations.
 
 ## Open Issues
 1. **Type Integration**: Ensuring proper type definitions for MCP server resources and tools
 2. **ArangoDB Transaction API**: Error with transaction implementation in the QueryRepository
 3. **Collection Naming**: Docker service vs. ArangoDB collection naming inconsistency may cause issues
 4. **MCP Tool Parameters**: Ensuring proper validation of tool parameters with Zod schemas
+5. **LLM Response Parsing**: Ensure consistent JSON format from OpenAI responses
 
 ## Next Steps
 1. Enhance MCP resources with more detailed schema information
@@ -16,6 +17,7 @@ The project is currently implementing an MCP server that provides access to Aran
 4. Add comprehensive MCP Inspector tests
 5. Create documentation for Claude Desktop integration
 6. Verify that all scripts work correctly with Bun and pnpm
+7. Improve LLM query validation with fallback mechanisms
 
 ## Recent Changes
 1. Removed Express API and related components
@@ -25,6 +27,7 @@ The project is currently implementing an MCP server that provides access to Aran
 5. Streamlined project structure
 6. Added MCP Inspector for testing
 7. Simplified the architecture to focus on MCP and ArangoDB
+8. Added LLM-based query validation using OpenAI and Langchain
 
 ## Current Decisions
 1. Using ES Modules instead of CommonJS
@@ -34,6 +37,8 @@ The project is currently implementing an MCP server that provides access to Aran
 5. Explicit typing of all functions and parameters
 6. Using MCP for standardized database access
 7. Supporting Claude Desktop integration
+8. Using LLM validation for destructive AQL queries
+9. Requiring OpenAI API key for query validation
 
 ## Working Notes
 - ArangoDB should be running before MCP server starts (dependency)
@@ -42,4 +47,6 @@ The project is currently implementing an MCP server that provides access to Aran
 - Error responses are standardized across MCP tools and resources
 - MCP resources provide metadata about database structure
 - MCP tools enable complex queries and data retrieval
-- Claude Desktop configuration needs to be updated to use the MCP server 
+- Claude Desktop configuration needs to be updated to use the MCP server
+- Environment variable OPENAI_API_KEY is required for query validation
+- Destructive queries need skipValidation flag to execute 

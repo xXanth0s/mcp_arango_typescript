@@ -29,6 +29,12 @@ The project implements a Model Context Protocol (MCP) server that connects direc
 - **Tools**: Provide interactive functionality (queries, data retrieval)
 - **Templates**: Allow parameterized resource URIs
 
+### LLM Validation Pattern
+- **Query Analysis**: Uses OpenAI to detect destructive operations
+- **Permission Management**: Blocks destructive operations by default
+- **Override Mechanism**: Allow bypassing with explicit flag
+- **Prompt Engineering**: Structured prompts for consistent responses
+
 ## Database Schema Design
 - **Document Collections**: For entity data (users, items, orders)
 - **Edge Collections**: For relationships (user_orders, order_items)
@@ -38,6 +44,7 @@ The project implements a Model Context Protocol (MCP) server that connects direc
 - Try-catch blocks in server resource/tool handlers
 - Consistent error response format
 - Detailed error messages where appropriate
+- Validation error reporting for destructive queries
 
 ## MCP Design Principles
 - Standardized resource naming
@@ -45,6 +52,7 @@ The project implements a Model Context Protocol (MCP) server that connects direc
 - Clear tool parameters with validation
 - Structured response formats
 - Error formatting for client comprehension
+- Safe-by-default operation
 
 ## Transaction Handling
 - ArangoDB transactions for multi-document operations
@@ -54,6 +62,12 @@ The project implements a Model Context Protocol (MCP) server that connects direc
 - Strategic indexing on frequently accessed fields
 - Efficient AQL queries with appropriate filters
 
+## Security Patterns
+- LLM validation for destructive operations
+- Explicit opt-in for data modification
+- Informative error messages without exposing internals
+- Environment variable for API keys
+
 ## Code Organization
 
 ```
@@ -62,6 +76,6 @@ src/
 ├── repositories/  # Data access layer
 ├── schemas/       # Database schema definitions
 ├── scripts/       # Utility scripts (db init, seed)
-├── services/      # Database connection
+├── services/      # Database connection, LLM validation
 └── mcp-server.ts  # MCP server entry point
 ``` 

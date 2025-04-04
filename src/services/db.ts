@@ -1,5 +1,12 @@
 import { Database, aql } from 'arangojs';
-import { DB_CONFIG } from '../schemas/schema.js';
+import { COLLECTIONS } from '../schemas/schema.js';
+import 'dotenv/config';
+
+// Load environment variables
+const ARANGO_URL = process.env.ARANGO_URL || 'http://localhost:8530';
+const ARANGO_DB_NAME = process.env.ARANGO_DB_NAME || 'shop_db';
+const ARANGO_USERNAME = process.env.ARANGO_USERNAME || 'root';
+const ARANGO_PASSWORD = process.env.ARANGO_PASSWORD || 'rootpassword';
 
 // Singleton instance for database connection
 let dbInstance: Database | null = null;
@@ -10,13 +17,14 @@ let dbInstance: Database | null = null;
 export const getDb = (databaseName?: string): Database => {
   if (!dbInstance) {
     dbInstance = new Database({
-      url: DB_CONFIG.url,
+      url: ARANGO_URL,
       auth: {
-        username: DB_CONFIG.auth.username,
-        password: DB_CONFIG.auth.password
+        username: ARANGO_USERNAME,
+        password: ARANGO_PASSWORD
       },
-      databaseName: databaseName || DB_CONFIG.name
+      databaseName: databaseName || ARANGO_DB_NAME
     });
+    console.log(`Connected to ArangoDB at ${ARANGO_URL}, database: ${ARANGO_DB_NAME}`);
   }
   return dbInstance;
 };
@@ -28,5 +36,5 @@ export const resetDb = (): void => {
   dbInstance = null;
 };
 
-// Export aql for convenience
-export { aql }; 
+// Export collections and aql for convenience
+export { COLLECTIONS, aql }; 

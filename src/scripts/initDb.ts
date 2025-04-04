@@ -1,5 +1,9 @@
+import 'dotenv/config';
 import { getDb } from '../services/db.js';
-import { COLLECTIONS, GRAPH, INDEXES, DB_CONFIG } from '../schemas/schema.js';
+import { COLLECTIONS, GRAPH, INDEXES } from '../schemas/schema.js';
+
+// Load environment variables
+const ARANGO_DB_NAME = process.env.ARANGO_DB_NAME || 'shop_db';
 
 /**
  * Initializes the database and creates all required collections and indexes
@@ -10,13 +14,13 @@ async function initializeDatabase(): Promise<void> {
   try {
     // Check if database exists, if not create it
     const dbList = await db.listDatabases();
-    if (!dbList.includes(DB_CONFIG.name)) {
-      console.log(`Creating database: ${DB_CONFIG.name}`);
-      await db.createDatabase(DB_CONFIG.name);
+    if (!dbList.includes(ARANGO_DB_NAME)) {
+      console.log(`Creating database: ${ARANGO_DB_NAME}`);
+      await db.createDatabase(ARANGO_DB_NAME);
     }
     
-    console.log(`Using database: ${DB_CONFIG.name}`);
-    db = db.database(DB_CONFIG.name);
+    console.log(`Using database: ${ARANGO_DB_NAME}`);
+    db = db.database(ARANGO_DB_NAME);
     
     // Create document collections
     for (const collection of [COLLECTIONS.USERS, COLLECTIONS.ITEMS, COLLECTIONS.ORDERS]) {

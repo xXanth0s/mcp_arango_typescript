@@ -1,6 +1,10 @@
+import 'dotenv/config';
 import { OrderRepository } from '../repositories/OrderRepository.js';
-import { COLLECTIONS, DB_CONFIG } from '../schemas/schema.js';
+import { COLLECTIONS } from '../schemas/schema.js';
 import { getDb } from '../services/db.js';
+
+// Load environment variables
+const ARANGO_DB_NAME = process.env.ARANGO_DB_NAME || 'shop_db';
 
 /**
  * Seeds the database with test data
@@ -9,7 +13,7 @@ async function seedTestData(): Promise<void> {
   console.log('Starting database seed process...');
   try {
     // Connect to the database
-    const db = getDb(DB_CONFIG.name);
+    const db = getDb(ARANGO_DB_NAME);
     const now = new Date().toISOString();
 
     // Clear existing data (optional - comment out if you want to keep existing data)

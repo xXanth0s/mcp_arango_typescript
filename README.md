@@ -9,6 +9,7 @@ This project implements a Model Context Protocol (MCP) server for ArangoDB, prov
 - Docker and Docker Compose
 - ArangoDB (runs in Docker)
 - pnpm package manager
+- OpenAI API key (for query validation)
 
 ## Setup
 
@@ -32,6 +33,19 @@ pnpm run db:init
 pnpm run db:seed
 ```
 
+5. Configure environment variables:
+   - Copy the `.env` file to `.env.local` (this file is gitignored)
+   - Edit `.env.local` and add your OpenAI API key:
+```bash
+OPENAI_API_KEY=your_actual_api_key_here
+```
+
+## Running the MCP Server
+
+Start the MCP server:
+```bash
+pnpm run start
+```
 
 ## Using the MCP Inspector
 
@@ -74,6 +88,42 @@ nano ~/.claude-desktop/config.json
 
 4. Restart Claude Desktop to apply the changes
 
+## Environment Variables
+
+The application uses the following environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `ARANGO_URL` | URL of the ArangoDB server | http://localhost:8530 |
+| `ARANGO_DB_NAME` | Name of the ArangoDB database | shop_db |
+| `ARANGO_USERNAME` | Username for ArangoDB authentication | root |
+| `ARANGO_PASSWORD` | Password for ArangoDB authentication | rootpassword |
+| `OPENAI_API_KEY` | API key for OpenAI services | (required) |
+| `OPENAI_MODEL` | OpenAI model to use for validation | gpt-4o |
+| `PORT` | Port for the server | 3000 |
+| `NODE_ENV` | Environment (development/production) | development |
+
+These variables can be set in `.env.local` for local development.
+
+## LLM Query Validation
+
+The MCP server includes LLM-based validation for AQL queries to prevent accidental modification of the database:
+
+- Queries are validated using OpenAI's models to determine if they are destructive
+- Destructive queries (INSERT, UPDATE, DELETE, etc.) will be blocked by default
+- To execute a destructive query, set `skipValidation: true` in the query tool parameters
+- Requires a valid OpenAI API key set in the OPENAI_API_KEY environment variable
+
+Example safe query (allowed):
+```
+FOR user IN users RETURN user
+```
+
+Example destructive query (blocked unless skipValidation is true):
+```
+INSERT { name: "New User", email: "test@example.com" } INTO users
+```
+
 ## Architecture
 
 The project implements a Model Context Protocol (MCP) server that connects directly to ArangoDB:
@@ -92,6 +142,7 @@ The project implements a Model Context Protocol (MCP) server that connects direc
 - Repository Pattern for data access
 - Singleton Pattern for database connection
 - Resource/Tool-based API model (MCP)
+- LLM-based query validation
 
 ## Database Schema
 
@@ -107,7 +158,7 @@ The project implements a Model Context Protocol (MCP) server that connects direc
 
 - Schema information resources
 - Collection statistics resources
-- Custom AQL query tool
+- Custom AQL query tool with LLM validation
 - Recent orders tool
 - User purchase history tool
 - Popular items tool
@@ -119,14 +170,14 @@ The project implements a Model Context Protocol (MCP) server that connects direc
 src/
 ├── repositories/  # Data access layer
 ├── schemas/       # Database schema definitions
-├── services/      # Database connection service
+├── services/      # Database connection service and LLM validation
 ├── scripts/       # Database initialization and seeding
 └── mcp-server.ts  # MCP server entry point
 ```
 
 ## Available Scripts
 
-- `pnpm run start`: Start the MCP server - only for testing if it has compilation errors
+- `pnpm run start`: Start the MCP server
 - `pnpm run db:init`: Initialize database schema
 - `pnpm run db:seed`: Seed the database with test data
 - `pnpm run lint`: Run ESLint on source code
@@ -137,4 +188,5 @@ src/
 - TypeScript with strict type checking
 - ESLint configured for TypeScript
 - ES Modules format
-- Bun for execution and building 
+- Bun for execution and building
+- OpenAI and Langchain for LLM-based validation 

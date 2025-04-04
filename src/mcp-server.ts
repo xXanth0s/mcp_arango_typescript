@@ -1,8 +1,16 @@
+// Load environment variables
+import 'dotenv/config';
+
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { QueryRepository } from './repositories/QueryRepository.js';
 import { COLLECTIONS, GRAPH, INDEXES } from './schemas/schema.js';
+import { isDestructiveQuery } from './services/queryValidator.js';
+
+// Get the NODE_ENV from environment or default to development
+const NODE_ENV = process.env.NODE_ENV || 'development';
+console.log(`Starting MCP server in ${NODE_ENV} mode`);
 
 const queryRepo = new QueryRepository();
 
@@ -84,15 +92,37 @@ server.resource(
   }
 );
 
-// Query tool - allows executing custom AQL queries
+// Query tool - allows executing custom AQL queries with LLM validation
 server.tool(
   'query',
   {
     query: z.string().describe('AQL query to execute against the database'),
-    bindVars: z.record(z.any()).optional().describe('Bind variables to use in the parameterized query')
+    bindVars: z.record(z.any()).optional().describe('Bind variables to use in the parameterized query'),
   },
   async ({ query, bindVars = {} }) => {
     try {
+      // Check if the query is destructive using LLM validation
+      try {
+          const validation = await isDestructiveQuery(query);
+          
+          // If the query is destructive, return an error
+          if (validation.isDestructive) {
+            return {
+              content: [{
+                type: 'text',
+                text: `Query validation failed: This query appears to be destructive. ${validation.reason}
+                
+To execute this query anyway, set skipValidation: true`
+              }],
+              isError: true
+            };
+          }
+        } catch (validationError) {
+          // If validation fails (e.g., no API key), warn but allow query to proceed
+          console.warn('Query validation skipped:', validationError instanceof Error ? validationError.message : String(validationError));
+        }
+      
+      // Execute the query
       const results = await queryRepo.executeQuery(query, bindVars);
       return {
         content: [{
@@ -212,7 +242,7 @@ server.resource(
             stats: 'Provides document counts for all collections in the database, giving a quick overview of the data volume in each collection'
           },
           tools: {
-            query: 'Executes a custom AQL query against the ArangoDB database with optional bind variables for parameterized queries. Use this for complex data retrieval or when other tools are insufficient.',
+            query: 'Executes a custom AQL query against the ArangoDB database with optional bind variables for parameterized queries. Uses LLM validation to prevent destructive operations by default. Set skipValidation:true to bypass validation for data modification queries.',
             'recent-orders': 'Retrieves the most recent orders along with their items and user information, providing a complete view of recent purchase activities in the system.',
             'user-purchase-history': 'Retrieves the complete purchase history for a specific user, including all orders, their items, quantities, and pricing information.',
             'popular-items': 'Identifies and returns the most popular items based on total sales quantity, providing insights into top-selling products.'

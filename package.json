@@ -1,8 +1,12 @@
 {
   "author": "",
   "dependencies": {
+    "@langchain/core": "^0.3.43",
+    "@langchain/openai": "^0.5.2",
     "@modelcontextprotocol/sdk": "^1.8.0",
     "arangojs": "^10.1.1",
+    "dotenv": "^16.4.7",
+    "langchain": "^0.3.19",
     "zod": "^3.24.2"
   },
   "description": "MCP server for ArangoDB integration",
@@ -13,7 +17,12 @@
     "eslint": "^9.23.0",
     "typescript": "^5.8.2"
   },
-  "keywords": ["mcp", "arango", "database", "typescript"],
+  "keywords": [
+    "mcp",
+    "arango",
+    "database",
+    "typescript"
+  ],
   "license": "ISC",
   "main": "src/mcp-server.ts",
   "name": "mcp-arango-server",

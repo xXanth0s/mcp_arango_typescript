@@ -7,6 +7,7 @@
 - **Database**: ArangoDB
 - **Protocol**: Model Context Protocol (MCP)
 - **Database Client**: arangojs
+- **LLM Integration**: OpenAI, Langchain
 - **Development Tools**: ESLint, MCP Inspector
 
 ## Project Configuration
@@ -16,6 +17,7 @@
 - Docker Compose for running ArangoDB
 - Database initialization script included
 - Bun used for execution and building
+- OpenAI API for query validation
 
 ## Development Setup
 1. **Bun**: Required for running the application and scripts
@@ -23,6 +25,7 @@
 3. **Docker**: Required for running ArangoDB in a container
 4. **TypeScript**: For type-safe development
 5. **MCP Inspector**: For testing MCP resources and tools
+6. **OpenAI API Key**: Required for query validation
 
 ## Build & Run Scripts
 - `pnpm run start`: Start the MCP server
@@ -43,10 +46,15 @@ Docker Compose file includes:
 - Bun path setup for macOS systems
 - MCP Server accessible from Claude AI
 
+## Environment Variables
+- `OPENAI_API_KEY`: API key for OpenAI services (required for query validation)
+
 ## Dependencies
 - **@modelcontextprotocol/sdk**: MCP server implementation
 - **arangojs**: Official ArangoDB JavaScript driver
 - **zod**: Schema validation for MCP tools
+- **langchain**: LLM framework for AI integration
+- **@langchain/openai**: OpenAI integration for Langchain
 - **typescript**: TypeScript compiler
 - **bun**: JavaScript/TypeScript runtime and bundler
 
