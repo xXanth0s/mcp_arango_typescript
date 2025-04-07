@@ -8,11 +8,13 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
 
 /**
- * Determines if a query is destructive (INSERT, UPDATE, DELETE, REMOVE operations)
- * using OpenAI LLM for validation
+ * Validates an AQL query for security and privacy concerns:
+ * 1. Checks if the query is destructive (INSERT, UPDATE, DELETE, REMOVE operations)
+ * 2. Checks if the query uses personal user data (email, name)
+ * 3. Checks if the query would return personal user data
  */
-export async function isDestructiveQuery(query: string): Promise<{
-  isDestructive: boolean;
+export async function validateQuery(query: string): Promise<{
+  isSafe: boolean;
   reason: string;
 }> {
   try {
@@ -31,14 +33,18 @@ export async function isDestructiveQuery(query: string): Promise<{
     // Create prompt template for validation
     const promptTemplate = new PromptTemplate({
       template: `
-You are a database security expert tasked with evaluating ArangoDB AQL queries to determine 
-if they are destructive (modifying data) or non-destructive (read-only).
+You are a database security and privacy expert tasked with evaluating ArangoDB AQL queries for three criteria:
 
-Please analyze the following AQL query and determine if it is destructive. A destructive 
-query will INSERT, UPDATE, REPLACE, DELETE, REMOVE, CREATE, DROP, or otherwise modify data 
-or schema. A non-destructive query will only READ data (RETURN, FOR, FILTER, SORT, LIMIT, etc.).
+1. Destructiveness: Determine if the query modifies data or schema
+2. Personal Data Usage: Check if the query uses personal user data in filters or conditions
+3. Personal Data Exposure: Analyze if the query would return personal user data in results
 
-Query: {query}
+For this validation:
+- Personal data includes user emails, names, addresses, phone numbers, or any personally identifiable information
+- Pay close attention to any "users" collection references and their fields
+- Look for email, name, or similar fields being accessed or returned
+
+Query to analyze: {query}
 
 `,
       inputVariables: ["query"],
@@ -49,23 +55,23 @@ Query: {query}
     
     const responseSchema = z.object({
       isDestructive: z.boolean(),
+      usesPersonalData: z.boolean(),
+      exposesPersonalData: z.boolean(),
       reason: z.string(),
     });
     const structuredModel = model.withStructuredOutput(responseSchema);
     // Get the LLM response
     const response = await structuredModel.invoke(prompt);
     
-    try {
-      return {
-        isDestructive: response.isDestructive,
-        reason: response.reason || 'No reason provided'
-      };
-    } catch (parseError) {
-      console.error('Failed to parse LLM response:', response);
-      throw new Error('Failed to parse validation response from LLM');
-    }
+    // A query is safe only if it's not destructive AND doesn't use personal data AND doesn't expose personal data
+    const isSafe = !(response.isDestructive || response.usesPersonalData || response.exposesPersonalData);
+    
+    return {
+      isSafe,
+      reason: response.reason || 'No reason provided'
+    };
   } catch (error) {
     console.error('Query validation error:', error);
     throw new Error(`Query validation failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-} 
+}
