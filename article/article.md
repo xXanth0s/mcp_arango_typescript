@@ -1,4 +1,4 @@
-# Enhancing AI Database Interaction with the Model Context Protocol: A Case Study with ArangoDB
+# Give your LLM-Agent secure and GPDR compliant access to your databse
 
 Anthropic recently dropped a bombshell in the tech world with the Model Context Protocol (MCP).
 Think of it as a magical bridge that lets agentic LLMs play nice with software.
@@ -81,8 +81,8 @@ graph TD
 
 Key components include:
 - MCP server implementation using the official MCP SDK
-- Repository pattern for database access
 - Query validation using OpenAI LLMs
+- Repository pattern for database access
 - ArangoDB connection management
 
 The implementation is built with TypeScript and runs on Bun runtime.
@@ -109,14 +109,14 @@ pnpm add @modelcontextprotocol/sdk arangojs dotenv zod @langchain/core @langchai
 pnpm add -D typescript @types/node eslint @typescript-eslint/eslint-plugin @typescript-eslint/parser
 ```
 
-In this step, we're installing several crucial packages:
-- `@modelcontextprotocol/sdk`: The official SDK for implementing MCP servers, providing the core functionality for resources and tools
-- `arangojs`: The official ArangoDB JavaScript driver that allows us to connect to and query the database
-- `dotenv`: For loading environment variables from a .env file, keeping sensitive information like API keys secure
-- `zod`: A TypeScript-first schema validation library that we'll use to validate tool parameters
-- `@langchain/core` and `@langchain/openai`: Components of the LangChain framework that simplify interactions with LLMs
-- `langchain`: The main LangChain package for building LLM-powered applications
-- Development dependencies include TypeScript and ESLint for code quality and static typing
+In this step, we're installing several packages:
+- `@modelcontextprotocol/sdk`: The official SDK for implementing MCP servers.
+- `arangojs`: The official ArangoDB JavaScript driver that allows us to connect to and query the database.
+- `dotenv`: For loading environment variables from a .env file, keeping sensitive information like API keys secure.
+- `zod`: A TypeScript-first schema validation library that we'll use to validate tool parameters.
+- `@langchain/core` and `@langchain/openai`: Components of the LangChain framework that simplify interactions with LLMs.
+- `langchain`: The main LangChain package for building LLM-powered applications.
+- Development dependencies include TypeScript and ESLint for code quality and static typing.
 
 We're using pnpm as our package manager for its efficiency and disk space savings, but you could also use npm or yarn.
 
@@ -141,7 +141,7 @@ Create a `tsconfig.json` file in the root directory:
 }
 ```
 
-This TypeScript configuration sets up our development environment with several important features, but I think there is no further explanaitin needed
+This TypeScript configuration sets up our development environment with several important features, but I think there is no further explanation needed.
 
 ### Step 3: Set Up ArangoDB with Docker Compose
 
@@ -186,13 +186,11 @@ PORT=3000
 NODE_ENV=development
 ```
 
-The `OPENAI_API_KEY` will be needed for the LLM-Validator and needs some credit on your openAi account. However, since we are using langchain to access the LLM, this can be replaced, or even a local LLM or SLM can be used.
+The `OPENAI_API_KEY` will be needed for the LLM-Validator and needs some credit on your OpenAI account. However, since we are using LangChain to access the LLM, this can be replaced, or even a local LLM or SLM can be used.
 
 ### Step 5: Accessing Arango
 
-To access the arango database we firstly have to initialize the schema, the database, then add some data and afterwards we can access the db. 
-You can checkout all steps in the GitHub repo, I will now only show you, how to get a connection to the db and querying it. 
-It is as simple as that.
+To access the Arango database, we first initialize the schema and database, add some data, and then we're ready to query it. You can find all setup steps in the GitHub repo, but here I'll focus only on establishing a connection and querying the database.
 
 ```typescript
 
@@ -240,9 +238,13 @@ flowchart LR
 
 ### Step 6: Implement the MCP Server
 
-The MCP server is a crucial component that provides standardized access to our ArangoDB database. In our case, the MCP server is started by the MCP Host, which will be the claud desktop app. 
+The MCP server is a crucial component that provides standardized access to our ArangoDB database. 
+In our case, the MCP server is started by the MCP Host, which will be the Claude desktop app. 
 
-In our exmample I have added two endpoints, which are availbe for the LLM. One provdides the structure of the database, which is a static not changing thing. Therefore we are using the MCP Type `resource` which are read-only data providers. The second endpoint is the query endpoint, which is dynamic and acts like a function call. Therefore it defined as the MCP type `tools`, which is similar to the tools provided to normal AI agents. 
+In our example, I have added two endpoints, which are available for the LLM. One provides the structure of the database, which is a static, unchanging thing.
+Therefore, we are using the MCP Type `resource`, which read-only data providers. 
+The second endpoint is the query endpoint, which is dynamic and acts like a function call. 
+Therefore, it is defined as the MCP type `tools`, which is similar to the tools provided to normal AI agents. 
 
 With the help of `zod`, we can define typed input parameters with an additional description, so the LLM knows how to interact with the endpoints.
 
@@ -348,26 +350,26 @@ pnpm run inspector
 
 The MCP Inspector is an invaluable tool for testing and debugging your MCP server. It provides a simple UI, where you can fully interact with the MCP server, like executing the tools or getting the resource.
 
-After accessing the the Web UI, we can see on the left panel some prefilled are to connect with the mcp server. This got prefilled by our 
+After accessing the Web UI, we can see on the left panel some prefilled areas to connect with the MCP server. This got prefilled by our 
 
 ![MCP Inspector Connection](./images/MCP_Inspector_connect.png) 
 
 **MCP Inspector Settings**
 
-1. **Transport Type**: This setting determines how the MCP Inspector communicates with your server. We use `STDIO`, which uses standard input/output streams for communication. This is ideal for local testing. Alternatively SSE with HTTP can be used
+1. **Transport Type**: This setting determines how the MCP Inspector communicates with your server. We use `STDIO`, which uses standard input/output streams for communication. This is ideal for local testing. Alternatively, SSE with HTTP can be used.
 
-2. **Command**: This is the command used to start your MCP server. The app will be started with `bun`. If node is used, this should be replaced with `node`, as an example
+2. **Command**: This is the command used to start your MCP server. The app will be started with `bun`. If node is used, this should be replaced with `node`, as an example.
 
 3. **Arguments**: These are the additional parameters passed to the command. Bun needs the file to execute as parameters, therefore set the root file as argument `src/mcp-server.ts`.
 
 After clicking on connect, we can see the available resources and tools, which is the same, our future agent will see and access. 
-Clicking on the reesources, we can access the schema.
+Clicking on the resources, we can access the schema.
 
-![MCP Inspector Connection](./images/MCP_Inspector_resources.png) 
+![MCP Inspector Resources](./images/MCP_Inspector_resources.png) 
 
 Clicking on the tab Tools, will get us the query tool. I have added some test data to the database and execute some simple query, to fetch all users. As we can see in the screenshot, the MCP server will then get us the response for the query 
 
-![MCP Inspector Connection](./images/MCP_Inspector_tools.png) 
+![MCP Inspector Tools](./images/MCP_Inspector_tools.png) 
 
 
 ### Step 11: Add LLM Query Validation
@@ -378,7 +380,7 @@ Now, let's add the LLM validation to protect against destructive queries.
 The query validator introduces an innovative security layer using AI to protect our database:
 
 1. **LLM-Based Security Approach**:
-   - Rather than using regex patterns or keyword matching, we leverage an LLM's understanding of database operations
+   - Rather than using super complex regex patterns or keyword matching, we leverage an LLM's understanding of database operations
    - This approach is more flexible and can handle complex queries that might bypass simpler validation techniques
    - The LLM can provide reasoning about why a query is considered destructive
 
@@ -408,23 +410,13 @@ This validator acts as a gatekeeper, preventing accidental or intentional destru
 
 
 ```typescript
-import { ChatOpenAI } from '@langchain/openai';
-import { PromptTemplate } from "@langchain/core/prompts";
-import { z } from 'zod';
-import 'dotenv/config';
-
-// Load environment variables
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
-
-/**
- * Determines if a query is destructive (INSERT, UPDATE, DELETE, REMOVE operations)
- * using OpenAI LLM for validation
- */
-export async function isDestructiveQuery(query: string): Promise<{
-  isDestructive: boolean;
+export async function validateQuery(query: string): Promise<{
+  isSafe: boolean;
   reason: string;
 }> {
+  // Load environment variables
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
   try {
     // Check for OpenAI API key
     if (!OPENAI_API_KEY) {
@@ -432,7 +424,7 @@ export async function isDestructiveQuery(query: string): Promise<{
     }
     
     // Initialize the OpenAI model
-    const model = new ChatOpenAI({
+    const model: ChatOpenAI = new ChatOpenAI({
       modelName: OPENAI_MODEL,
       temperature: 0,
       openAIApiKey: OPENAI_API_KEY,
@@ -441,14 +433,18 @@ export async function isDestructiveQuery(query: string): Promise<{
     // Create prompt template for validation
     const promptTemplate = new PromptTemplate({
       template: `
-You are a database security expert tasked with evaluating ArangoDB AQL queries to determine 
-if they are destructive (modifying data) or non-destructive (read-only).
+You are a database security and privacy expert tasked with evaluating ArangoDB AQL queries for three criteria:
 
-Please analyze the following AQL query and determine if it is destructive. A destructive 
-query will INSERT, UPDATE, REPLACE, DELETE, REMOVE, CREATE, DROP, or otherwise modify data 
-or schema. A non-destructive query will only READ data (RETURN, FOR, FILTER, SORT, LIMIT, etc.).
+1. Destructiveness: Determine if the query modifies data or schema
+2. Personal Data Usage: Check if the query uses personal user data in filters or conditions. Not included into personal user data are ids, which are always present in ArangoDB.
+3. Personal Data Exposure: Analyze if the query would return personal user data in results.
 
-Query: {query}
+For this validation:
+- Personal data includes user emails, names, addresses, phone numbers, or any personally identifiable information. The ID of a user is not personal data.
+- Pay close attention to any "users" collection references and their fields. The collection can still be used for other purposes than personal data, like joining with other collections.
+- Look for email, name, or similar fields being accessed or returned
+
+Query to analyze: {query}
 
 `,
       inputVariables: ["query"],
@@ -459,15 +455,20 @@ Query: {query}
     
     const responseSchema = z.object({
       isDestructive: z.boolean(),
+      usesPersonalData: z.boolean(),
+      exposesPersonalData: z.boolean(),
       reason: z.string(),
     });
     const structuredModel = model.withStructuredOutput(responseSchema);
-    
     // Get the LLM response
     const response = await structuredModel.invoke(prompt);
     
+    // A query is safe only if it's not destructive AND doesn't use personal data AND doesn't expose personal data
+    // If we would like to, we could log the exect error reason
+    const isSafe = !(response.isDestructive || response.usesPersonalData || response.exposesPersonalData);
+    
     return {
-      isDestructive: response.isDestructive,
+      isSafe,
       reason: response.reason || 'No reason provided'
     };
   } catch (error) {
@@ -479,47 +480,12 @@ Query: {query}
 
 ### Step 12: Update MCP Server with Query Validation
 
-Modify the `src/mcp-server.ts` file to include the query validation:
+Modify the `src/mcp-server.ts` file to include the query validation. 
+We simply call the validator with the query and get a formated object, which will tell us, if the query is fine and tells us the reason, when it is not. 
+With just a few simple lines of code we have achieved a fully functional LLM Validation. 
 
 ```typescript
 // Load environment variables
-import 'dotenv/config';
-
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { z } from 'zod';
-import { QueryRepository } from './repositories/QueryRepository.js';
-import { COLLECTIONS, GRAPH, INDEXES } from './schemas/schema.js';
-import { isDestructiveQuery } from './services/queryValidator.js';
-
-// Get the NODE_ENV from environment or default to development
-const NODE_ENV = process.env.NODE_ENV || 'development';
-console.log(`Starting MCP server in ${NODE_ENV} mode`);
-
-const queryRepo = new QueryRepository();
-
-// Create the MCP server
-const server = new McpServer({
-  name: 'arango-db-server',
-  version: '1.0.0',
-  description: 'Server for querying ArangoDB and getting schema information'
-});
-
-// Schema resource - provides information about the ArangoDB schema
-server.resource(
-  'schema',
-  'schema://main',
-  async () => ({
-    contents: [{
-      uri: 'schema://main',
-      text: JSON.stringify({
-        collections: COLLECTIONS,
-        graph: GRAPH,
-        indexes: INDEXES
-      }, null, 2)
-    }]
-  })
-);
 
 // Query tool - now with LLM validation
 server.tool(
@@ -527,12 +493,10 @@ server.tool(
   {
     query: z.string().describe('AQL query to execute against the database'),
     bindVars: z.record(z.any()).optional().describe('Bind variables to use in the parameterized query'),
-    skipValidation: z.boolean().optional().describe('Skip LLM validation for destructive queries (use with caution)')
   },
   async ({ query, bindVars = {}, skipValidation = false }) => {
     try {
       // Check if the query is destructive using LLM validation
-      if (!skipValidation) {
         try {
           const validation = await isDestructiveQuery(query);
           
@@ -552,85 +516,84 @@ To execute this query anyway, set skipValidation: true`
           // If validation fails (e.g., no API key), warn but allow query to proceed
           console.warn('Query validation skipped:', validationError instanceof Error ? validationError.message : String(validationError));
         }
-      }
       
       // Execute the query
       const results = await queryRepo.executeQuery(query, bindVars);
-      return {
-        content: [{
-          type: 'text',
-          text: JSON.stringify(results, null, 2)
-        }]
-      };
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        content: [{
-          type: 'text',
-          text: `Error executing query: ${errorMessage}`
-        }],
-        isError: true
-      };
+      // OLD CODE
     }
   }
 );
-
-// Start the server using stdio transport
-const transport = new StdioServerTransport();
-server.listen(transport);
-console.log('MCP server running, waiting for commands...');
 ```
 
-This updated MCP server incorporates our query validation for enhanced security:
-
-1. **New Parameter for Override**:
-   - We've added a `skipValidation` parameter to the query tool's schema
-   - This boolean parameter is optional and defaults to false
-   - It allows trusted users to bypass validation when necessary
-   - The parameter description clearly warns about using this option with caution
-
-2. **Integration with Validator**:
-   - We import the `isDestructiveQuery` function from our validator service
-   - The validation is performed before executing any query (unless explicitly skipped)
-   - This creates a security checkpoint that prevents accidental data modifications
-
-3. **Graceful Validation Failures**:
-   - If validation fails for technical reasons (e.g., missing API key), we log a warning but allow the query to proceed
-   - This prevents the system from becoming completely non-functional if the validator has issues
-   - In a production system, you might want stricter behavior, blocking all queries if validation is unavailable
-
-4. **Clear Error Messages**:
-   - When a destructive query is detected, we return a detailed error message
-   - The message includes the reason provided by the LLM for why the query is considered destructive
-   - We also provide instructions on how to bypass validation if needed
-   - This helps users understand the security measure and how to work with it
-
-5. **Standard MCP Error Formatting**:
-   - We return errors in the standard MCP format with `isError: true`
-   - The error content is provided as text in the response
-   - This consistent error handling makes it easier for clients to process and display errors
-
-The updated implementation provides a robust security layer while maintaining flexibility for legitimate use cases. By default, it prevents any data modifications, but authorized users can still perform necessary operations by explicitly setting `skipValidation: true`.
 
 ### Step 13: Test with Query Validation
 
-Now when you run the MCP Inspector:
-
-```bash
-pnpm run inspector
-```
-
-Try both types of queries:
+Now when you run the MCP Inspector, we can test one of the following queries.
 
 1. Non-destructive (should work):
 ```
-FOR user IN users RETURN user
+FOR user IN users RETURN user._id
 ```
 
-2. Destructive (should be blocked):
+2. Destructive, where a new user is created (should be blocked):
 ```
 INSERT { name: "New User", email: "test@example.com" } INTO users
 ```
 
-3. Destructive with validation bypass (should work):
+3. Query a user with a specific email, where we only get the id of the user. With this workaround, the LLM would be able to still know the email of a user (should not work):
 ```
+FOR user IN users FILTER user.email == "specific@example.com" RETURN user._id
+```
+
+After executing one of the destructive querys, the MCP Server throws an error 
+
+![MCP Inspector Error](./images/MCP_Inspector_error.png) 
+
+
+### Step 14: Testing it with Claud Desktop 
+
+To test it with claud Desktop, there is, thanks to MCP, not a big change needed. 
+The only thing we have to add, is a valid JSON to the `claude_desktop_config.json` file.
+
+#### Example
+```json
+  {
+    "mcpServers": {
+      "mcp_arango_server": {
+        "command": "bun",
+        "args": [
+          "/Users/mcp_is_awesome/Projects/mcp_arango_server/src/mcp-server.ts"
+        ]
+      }
+    }
+  }
+```
+
+Again we use `bun` as the execution tool and in the args we address the main .ts file. 
+
+After starting Claude, we directly see changes in the UI below the chat input, 
+We see the resources and the tools, the MCP Server provides. Clicking on it will show us more information about it.
+
+### Executing a Task with Claude
+
+I asked Claude Desktop a straightforward question: "Get me the user with the most orders." What unfolded was an impressive display of AI problem-solving.
+
+Initially, Claude attempted to retrieve the entire user collection, but the validation process blocked this to protect sensitive data. 
+Undeterred, Claude adapted by refining its queries. 
+It accessed the full schema to better understand the data structure and adjusted its approach accordingly.
+
+The entire process, as shown in the image, was a methodical step-by-step solution. 
+Claude successfully completed the task without accessing any specific customer data.
+
+For future interactions, we should adjust our prompts to instruct Claude to first obtain the schema before executing queries. This will ensure a more efficient and secure process.
+
+![Claud question solving](./images/CLAUD_query.png) 
+
+### Conclusion
+
+The Model Context Protocol (MCP) is a powerful and easy-to-implement tool that opens up new possibilities for AI interactions with databases. However, with great power comes the need for caution. That's why implementing validations is crucial to ensure safety.
+
+LLM validation is straightforward to set up, and we've successfully ensured that no LLM can access customer data. Testing with the `modelcontextprotocol/inspector` has proven to be the best way to refine and perfect our implementation.
+
+Claude Desktop seamlessly interacts with the MCP server, showcasing how effectively these systems can work together. By combining these technologies, we achieve a secure and efficient solution for AI-driven database interactions.
+

@@ -1,11 +1,8 @@
-import { ChatOpenAI, OpenAI } from '@langchain/openai';
 import { PromptTemplate } from "@langchain/core/prompts";
-import { z } from 'zod';
+import { ChatOpenAI } from '@langchain/openai';
 import 'dotenv/config';
+import { z } from 'zod';
 
-// Load environment variables
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
 
 /**
  * Validates an AQL query for security and privacy concerns:
@@ -17,6 +14,9 @@ export async function validateQuery(query: string): Promise<{
   isSafe: boolean;
   reason: string;
 }> {
+  // Load environment variables
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
   try {
     // Check for OpenAI API key
     if (!OPENAI_API_KEY) {
@@ -36,12 +36,12 @@ export async function validateQuery(query: string): Promise<{
 You are a database security and privacy expert tasked with evaluating ArangoDB AQL queries for three criteria:
 
 1. Destructiveness: Determine if the query modifies data or schema
-2. Personal Data Usage: Check if the query uses personal user data in filters or conditions
-3. Personal Data Exposure: Analyze if the query would return personal user data in results
+2. Personal Data Usage: Check if the query uses personal user data in filters or conditions. Not included into personal user data are ids, which are always present in ArangoDB.
+3. Personal Data Exposure: Analyze if the query would return personal user data in results.
 
 For this validation:
-- Personal data includes user emails, names, addresses, phone numbers, or any personally identifiable information
-- Pay close attention to any "users" collection references and their fields
+- Personal data includes user emails, names, addresses, phone numbers, or any personally identifiable information. The ID of a user is not personal data.
+- Pay close attention to any "users" collection references and their fields. The collection can still be used for other purposes than personal data, like joining with other collections.
 - Look for email, name, or similar fields being accessed or returned
 
 Query to analyze: {query}
