@@ -50,6 +50,3 @@ out/
 
 # History directory
 .history/
-
-# Cursor specific
-.cursor/ 
