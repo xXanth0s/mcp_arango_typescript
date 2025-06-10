@@ -1,3 +1,7 @@
+---
+description: "Project-wide rules for the ArangoDB TypeScript API project. Covers architecture, patterns, code style, and known challenges."
+alwaysApply: true
+---
 # Cursor Rules for ArangoDB TypeScript API Project
 
 ## Critical Implementation Patterns
